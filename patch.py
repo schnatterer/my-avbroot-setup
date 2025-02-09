@@ -894,6 +894,12 @@ def parse_args():
         type=Path,
         help='Private key passphrase file for OTA signing.',
     )
+    parser.add_argument(
+        '--skip-custota-tool',
+        action='store_true',
+        help='Skip the Custota tool steps like creating ota signature and JSON file',
+    )
+
 
     args = parser.parse_args()
 
@@ -1051,13 +1057,14 @@ def run(args: argparse.Namespace, temp_dir: Path):
         },
     )
 
-    # Generate Custota csig.
-    generate_csig(args.output, sign_key_ota, args.sign_cert_ota)
+    if not args.skip_custota_tool:
+        # Generate Custota csig.
+        generate_csig(args.output, sign_key_ota, args.sign_cert_ota)
 
-    # Generate Custota update-info.
-    codename = get_ota_metadata(args.output)['pre-device']
-    update_info = args.output.parent / f'{codename}.json'
-    generate_update_info(update_info, args.output.name)
+        # Generate Custota update-info.
+        codename = get_ota_metadata(args.output)['pre-device']
+        update_info = args.output.parent / f'{codename}.json'
+        generate_update_info(update_info, args.output.name)
 
 
 def main():
